@@ -6,7 +6,9 @@ body {
 	color: #9900ff;
 	background-repeat: no-repeat;
 	background-size: cover;
+	background-position: center center;
 	font-family: 'Righteous', sans-serif;
+	background-attachment: fixed;
 }
 
 #search-form input{
