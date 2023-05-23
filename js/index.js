@@ -156,3 +156,86 @@ function search(query, startIndex) {
 	};
 	xhr.send();
 }
+
+
+const suggests = document.querySelectorAll('.suggest');
+
+
+const input = document.querySelector('#query');
+
+
+suggests.forEach(function (suggest) {
+	suggest.addEventListener('click', function (event) {
+
+		event.preventDefault();
+
+
+		const suggestion = this.textContent.trim();
+
+		input.value = suggestion;
+	});
+});
+
+
+
+let currentTheme = localStorage.getItem("mytheme") || "default";
+
+setTheme("default", currentTheme);
+
+const themeButtons = document.querySelectorAll(".theme-button");
+
+themeButtons.forEach(button => {
+	if (button.dataset.theme === currentTheme) {
+		button.classList.add("active");
+	}
+
+	button.addEventListener("click", function () {
+		const newTheme = this.dataset.theme;
+		setTheme(currentTheme, newTheme);
+
+		themeButtons.forEach(button => {
+			button.classList.remove("active");
+		});
+
+		this.classList.add("active");
+	});
+});
+
+function setTheme(oldTheme, newTheme) {
+	const body = document.getElementsByTagName("body")[0];
+
+	body.classList.remove(oldTheme);
+	body.classList.add(newTheme);
+
+	currentTheme = newTheme;
+
+
+	localStorage.setItem("mytheme", newTheme);
+
+
+	const logo = document.getElementById("logo");
+	if (newTheme === "light") {
+		logo.src = "../img/white.png";
+	} else {
+		logo.src = "../img/logo2.png";
+	}
+}
+
+
+function myFunction() {
+	document.getElementById("myDropdown").classList.toggle("show");
+}
+
+
+window.onclick = function (event) {
+	if (!event.target.matches('.dropbtn')) {
+		var dropdowns = document.getElementsByClassName("dropdown-content");
+		var i;
+		for (i = 0; i < dropdowns.length; i++) {
+			var openDropdown = dropdowns[i];
+			if (openDropdown.classList.contains('show')) {
+				openDropdown.classList.remove('show');
+			}
+		}
+	}
+}
