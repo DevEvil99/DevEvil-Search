@@ -461,6 +461,10 @@ iframe {
 	.why {
 		margin-bottom: 25px;
 	}
+
+	.footer-left {
+		display: none;
+	}
 }
 
 
