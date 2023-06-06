@@ -6,156 +6,99 @@ var start = 1;
 var num = 10;
 
 function search(query, startIndex) {
-	startIndex = startIndex || 1;
-	url = 'https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + cx + '&key=' + apiKey + '&searchType=' +
-		searchType + '&start=' + startIndex + '&num=' + num;
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url, true);
-	xhr.onload = function () {
-		if (xhr.status === 200) {
-			var data = JSON.parse(xhr.responseText);
-			if (searchType === 'SEARCH_TYPE_UNDEFINED') {
-				var results = data.items;
-				var html = '';
-				for (var i = 0; i < results.length; i++) {
-					html += '<h3><a href="' + results[i].link + '">' + results[i].title + '</a></h3>';
-					html += '<p>' + results[i].snippet + '</p>';
-				}
-				document.getElementById('search-results').innerHTML = html;
+  startIndex = startIndex || 1;
+  url = 'https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + cx + '&key=' + apiKey + '&searchType=' +
+    searchType + '&start=' + startIndex + '&num=' + num;
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.onload = function () {
+    if (xhr.status === 200) {
+      var data = JSON.parse(xhr.responseText);
+      if (searchType === 'SEARCH_TYPE_UNDEFINED') {
+        var results = data.items;
+        var html = '';
+        for (var i = 0; i < results.length; i++) {
+          html += '<h3><a href="' + results[i].link + '" target="resultFrame">' + results[i].title + '</a></h3>';
+          html += '<p>' + results[i].snippet + '</p>';
+        }
+        document.getElementById('search-results').innerHTML = html;
+        document.getElementById('resultFrame').style.display = 'none'; // Hide the iframe by default
 
-	
-				if (data.queries.nextPage) {
-					var nextIndex = startIndex + num;
-					var buttonHtml = '<button id="load-more" data-start="' + nextIndex + '">Load more</button>';
-					document.getElementById('search-results').insertAdjacentHTML('beforeend', buttonHtml);
-					document.getElementById('load-more').addEventListener('click', function (event) {
-						event.preventDefault();
-						var nextStartIndex = this.getAttribute('data-start');
-						search(query, nextStartIndex);
-					});
-				}
-			} else if (searchType === 'image') {
-				var items = data.items;
-				var html = '';
-				for (var i = 0; i < items.length; i++) {
-					html += '<a href="' + items[i].link + '" target="_blank"><img src="' + items[i].image
-						.thumbnailLink + '"></a>';
-				}
-				document.getElementById('search-results').innerHTML = html;
+        // Add "Load more" button if there are more results
+        if (data.queries.nextPage) {
+          var nextIndex = startIndex + num;
+          var buttonHtml = '<button id="load-more" data-start="' + nextIndex + '">Load more</button>';
+          document.getElementById('search-results').insertAdjacentHTML('beforeend', buttonHtml);
+          document.getElementById('load-more').addEventListener('click', function (event) {
+            event.preventDefault();
+            var nextStartIndex = this.getAttribute('data-start');
+            search(query, nextStartIndex);
+          });
+        }
+      } else if (searchType === 'image') {
+        var items = data.items;
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+          html += '<a href="' + items[i].link + '" target="_blank"><img src="' + items[i].image
+            .thumbnailLink + '"></a>';
+        }
+        document.getElementById('search-results').innerHTML = html;
+        document.getElementById('resultFrame').style.display = 'none'; // Hide the iframe by default
 
-
-				if (data.queries.nextPage) {
-					var nextIndex = startIndex + num;
-					var buttonHtml = '<button id="load-more" data-start="' + nextIndex + '">Load more</button>';
-					document.getElementById('search-results').insertAdjacentHTML('beforeend', buttonHtml);
-					document.getElementById('load-more').addEventListener('click', function (event) {
-						event.preventDefault();
-						var nextStartIndex = this.getAttribute('data-start');
-						search(query, nextStartIndex);
-					});
-				}
-			}
-		} else if (xhr.status === 400) {
-			alert('Bad Request. Please try again later.');
-		} else if (xhr.status === 429) {
-			setTimeout(function () {
-				search(query, startIndex);
-			}, 1000);
-		} else {
-			alert('Request failed. Returned status of ' + xhr.status);
-		}
-	};
-	xhr.send();
+        // Add "Load more" button if there are more results
+        if (data.queries.nextPage) {
+          var nextIndex = startIndex + num;
+          var buttonHtml = '<button id="load-more" data-start="' + nextIndex + '">Load more</button>';
+          document.getElementById('search-results').insertAdjacentHTML('beforeend', buttonHtml);
+          document.getElementById('load-more').addEventListener('click', function (event) {
+            event.preventDefault();
+            var nextStartIndex = this.getAttribute('data-start');
+            search(query, nextStartIndex);
+          });
+        }
+      }
+    } else if (xhr.status === 400) {
+      alert('Bad Request. Please try again later.');
+    } else if (xhr.status === 429) {
+      setTimeout(function () {
+        search(query, startIndex);
+      }, 1000); // Delay for 1 second before retrying
+    } else {
+      alert('Request failed. Returned status of ' + xhr.status);
+    }
+  };
+  xhr.send();
 }
 
 document.getElementById('search-form').addEventListener('submit', function (event) {
-	event.preventDefault();
-	var query = document.getElementById('query').value;
-	search(query);
+  event.preventDefault();
+  var query = document.getElementById('query').value;
+  search(query);
 });
 
 document.getElementById('toggle-results').addEventListener('click', function (event) {
-	event.preventDefault();
-	if (searchType === 'SEARCH_TYPE_UNDEFINED') {
-		searchType = 'image';
-		document.getElementById('toggle-results').textContent = 'Web Results';
-	} else {
-		searchType = 'SEARCH_TYPE_UNDEFINED';
-		document.getElementById('toggle-results').textContent = 'Images';
-	}
-	start = 1;
-	search(document.getElementById('query').value);
+  event.preventDefault();
+  if (searchType === 'SEARCH_TYPE_UNDEFINED') {
+    searchType = 'image';
+    document.getElementById('toggle-results').textContent = 'All';
+  } else {
+    searchType = 'SEARCH_TYPE_UNDEFINED';
+    document.getElementById('toggle-results').textContent = 'Images';
+  }
+  start = 1; // reset start to 1 for new search
+  search(document.getElementById('query').value);
 });
 
 document.getElementById('search-results').addEventListener('click', function (event) {
-	if (event.target.id === 'load-more') {
-		event.preventDefault();
-		var nextStartIndex = parseInt(event.target.getAttribute('data-start'));
-		search(document.getElementById('query').value, nextStartIndex);
-	}
+  if (event.target.id === 'load-more') {
+    event.preventDefault();
+    var nextStartIndex = parseInt(event.target.getAttribute('data-start'));
+    search(document.getElementById('query').value, nextStartIndex);
+  } else if (event.target.tagName === 'A') {
+    document.getElementById('resultFrame').style.display = 'block'; // Show the iframe when a link is clicked
+  }
 });
 
-function search(query, startIndex) {
-	startIndex = startIndex || 1;
-	url = 'https://www.googleapis.com/customsearch/v1?q=' + query + '&cx=' + cx + '&key=' + apiKey + '&searchType=' +
-		searchType + '&start=' + startIndex + '&num=' + num;
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', url, true);
-	xhr.onload = function () {
-		if (xhr.status === 200) {
-			var data = JSON.parse(xhr.responseText);
-			if (searchType === 'SEARCH_TYPE_UNDEFINED') {
-				var results = data.items;
-				var html = '';
-				for (var i = 0; i < results.length; i++) {
-					html += '<h3><a href="' + results[i].link + '">' + results[i].title + '</a></h3>';
-					html += '<p>' + results[i].snippet + '</p>';
-				}
-				document.getElementById('search-results').innerHTML = html;
-				
-				if (data.queries.nextPage) {
-					var nextIndex = startIndex + num;
-					var buttonHtml = '<button id="load-more" data-start="' + nextIndex + '">Load more</button>';
-					document.getElementById('search-results').insertAdjacentHTML('beforeend', buttonHtml);
-					document.getElementById('load-more').addEventListener('click', function (event) {
-						event.preventDefault();
-						var nextStartIndex = this.getAttribute('data-start');
-						search(query, nextStartIndex);
-					});
-				}
-			} else if (searchType === 'image') {
-				var items = data.items;
-				var html = '';
-				for (var i = 0; i < items.length; i++) {
-					html += '<a href="' + items[i].link + '" target="_blank"><img src="' + items[i].image
-						.thumbnailLink + '"></a>';
-				}
-				document.getElementById('search-results').innerHTML = html;
-
-
-				if (data.queries.nextPage) {
-					var nextIndex = startIndex + num;
-					var buttonHtml = '<button id="load-more" data-start="' + nextIndex + '">Load more</button>';
-					document.getElementById('search-results').insertAdjacentHTML('beforeend', buttonHtml);
-					document.getElementById('load-more').addEventListener('click', function (event) {
-						event.preventDefault();
-						var nextStartIndex = this.getAttribute('data-start');
-						search(query, nextStartIndex);
-					});
-				}
-			}
-		} else if (xhr.status === 400) {
-			alert('Bad Request. Please try again later.');
-		} else if (xhr.status === 429) {
-			setTimeout(function () {
-				search(query, startIndex);
-			}, 1000);
-		} else {
-			alert('Request failed.  Returned status of ' + xhr.status);
-		}
-	};
-	xhr.send();
-}
 
 
 const suggests = document.querySelectorAll('.suggest');
@@ -215,9 +158,16 @@ function setTheme(oldTheme, newTheme) {
 
 	const logo = document.getElementById("logo");
 	if (newTheme === "light") {
-		logo.src = "../img/white.png";
+		logo.src = "img/white.png";
 	} else {
-		logo.src = "../img/logo2.png";
+		logo.src = "img/logo2.png";
+	}
+
+	const logo2 = document.getElementById("logo2");
+	if (newTheme === "light") {
+		logo2.src = "img/white.png";
+	} else {
+		logo2.src = "img/logo2.png";
 	}
 }
 
